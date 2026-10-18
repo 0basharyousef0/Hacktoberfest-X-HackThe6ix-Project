@@ -1,6 +1,7 @@
 // A boring "verify you're human" check that slowly goes wrong.
 //
 // Round 1: traffic lights (completely normal)
+// Round 1b: the event sponsors, hidden among pictures of Drake
 // Round 2: faces (one of them is a snapshot of the player)
 // Round 3: the grid is the player's live webcam... then "select all squares with two people"
 // Round 4: "Are you alone right now?"
@@ -34,12 +35,12 @@ const BACKDROPS = [
 
 const TEMPLATE = `
   <div class="hc-page">
-    <header class="hc-site">
+    <header class="hc-site hc-pending">
       <h1 class="hc-title">One quick check before you play</h1>
       <p class="hc-subtitle">Please verify you are human to continue.</p>
     </header>
 
-    <div class="hc-widget" role="group" aria-label="Human verification">
+    <div class="hc-widget hc-pending" role="group" aria-label="Human verification">
       <button class="hc-box" type="button" aria-label="I'm not a robot">
         <span class="hc-spinner" aria-hidden="true"></span>
         <svg class="hc-tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" /></svg>
@@ -135,6 +136,20 @@ export async function runCaptcha({ root, video, audio, vision }) {
         el.appendChild(span);
       } else if (tile.type === 'canvas') {
         el.appendChild(tile.canvas);
+      } else if (tile.type === 'img') {
+        el.classList.add(tile.fit === 'contain' ? 'hc-logo-tile' : 'hc-photo-tile');
+        const img = document.createElement('img');
+        img.alt = tile.label;
+        img.draggable = false;
+        // If the image file is missing, show its name so the round still works.
+        img.addEventListener('error', () => {
+          const label = document.createElement('span');
+          label.className = 'hc-tile-label';
+          label.textContent = tile.label;
+          img.replaceWith(label);
+        });
+        img.src = tile.src;
+        el.appendChild(img);
       }
       el.addEventListener('click', () => {
         audio.click();
@@ -181,8 +196,16 @@ export async function runCaptcha({ root, video, audio, vision }) {
 
   // ---------- Step 0: the checkbox ----------
 
+  // Intro sequence: the line types out, then the logos fade in, then the check itself.
+  await typeTagline(document.querySelector('.event-tagline'));
+  await sleep(250);
+  document.querySelectorAll('.event-logo').forEach((logo) => logo.classList.add('shown'));
+  await sleep(1100);
+  root.querySelectorAll('.hc-pending').forEach((el) => el.classList.remove('hc-pending'));
+
   await waitFor(box);
   audio.click();
+  document.querySelector('.event-tagline')?.classList.add('gone');
   box.classList.add('loading');
   await sleep(1300);
   box.classList.remove('loading');
@@ -229,6 +252,21 @@ export async function runCaptcha({ root, video, audio, vision }) {
     const items = shuffle(['🚦', '🚦', '🚦', ...pick(OBJECTS, 6)]);
     const els = buildGrid(items.map((emoji) => ({ type: 'emoji', emoji })));
     const correct = items.flatMap((e, i) => (e === '🚦' ? [i] : []));
+    return { els, check: (picks) => sameSet(picks, correct) };
+  });
+
+  // ---------- Round 1b: the event sponsors (and a lot of Drake) ----------
+
+  clearMsg();
+  await reloadAnimation();
+  setPrompt('Select all images with', 'our sponsors', 'Click verify once there are none left');
+  await playRound(() => {
+    const tiles = shuffle([
+      ...ASSETS.sponsorTiles.map((s) => ({ type: 'img', src: s.src, label: s.name, fit: s.fit || 'contain', sponsor: true })),
+      ...ASSETS.drakeTiles.map((src, i) => ({ type: 'img', src, label: `Drake ${i + 1}`, fit: 'cover' })),
+    ]);
+    const els = buildGrid(tiles);
+    const correct = tiles.flatMap((t, i) => (t.sponsor ? [i] : []));
     return { els, check: (picks) => sameSet(picks, correct) };
   });
 
@@ -425,4 +463,27 @@ function upsideDownFace(img) {
   g.rotate(Math.PI);
   g.drawImage(img, 0, 0);
   return c;
+}
+
+// Types "Brought to you by" out one letter at a time with a blinking caret.
+async function typeTagline(el) {
+  if (!el) return;
+  const text = el.getAttribute('aria-label') || el.textContent;
+  const typed = document.createElement('span');
+  typed.className = 'typed';
+  typed.setAttribute('aria-hidden', 'true');
+  const caret = document.createElement('span');
+  caret.className = 'caret';
+  caret.setAttribute('aria-hidden', 'true');
+  const rest = document.createElement('span');
+  rest.className = 'rest';
+  rest.setAttribute('aria-hidden', 'true');
+  rest.textContent = text;
+  el.replaceChildren(typed, caret, rest);
+  await sleep(400);
+  for (let i = 1; i <= text.length; i++) {
+    typed.textContent = text.slice(0, i);
+    rest.textContent = text.slice(i);
+    await sleep(text[i - 1] === ' ' ? 40 : 75);
+  }
 }

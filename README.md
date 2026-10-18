@@ -61,7 +61,7 @@ If face tracking cannot load at all, the game falls back to manual mode where a 
 - **Blink detection:** [MediaPipe Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker) outputs 52 face blendshapes per frame. The game averages `eyeBlinkLeft` and `eyeBlinkRight`, calibrates a per player baseline, and uses a threshold with hysteresis to turn that into clean "eyes closed" and "eyes opened" events.
 - **Behind you:** [MediaPipe Image Segmenter](https://ai.google.dev/edge/mediapipe/solutions/vision/image_segmenter) (multiclass selfie model) gives a person mask. The mirror view draws your webcam, then the figure, then only your pixels on top, so the figure really is standing behind you.
 - **Art:** the hallway is drawn procedurally on a canvas. The stalker (three Slender Man poses, swapped each time it moves), the game's scare face and the CAPTCHA's Freddy Fazbear jump scare are images in `assets/`. If an image fails to load, the game falls back to the procedurally drawn figure and face in `src/monster.js`.
-- **Image rights:** Freddy Fazbear is from Five Nights at Freddy's, and the Slender Man and scare face images came from the web. That is fine for a hackathon demo, but before this repo goes public for Hacktoberfest, swap them for original or properly licensed art, or remove them and let the drawn fallbacks take over.
+- **Image rights:** Freddy Fazbear is from Five Nights at Freddy's, the Drake pictures are photos of a real person, the sponsor and event logos belong to their companies, and the Slender Man and scare face images came from the web. That is fine for a hackathon demo, but before this repo goes public for Hacktoberfest, swap them for original or properly licensed art, or remove them and let the drawn fallbacks take over.
 - **Sound:** every sound (drone, heartbeat, creaks, whisper, scream) is synthesized live with the Web Audio API. No audio files.
 - **Privacy:** webcam frames never leave the browser. Nothing is recorded or uploaded.
 
@@ -80,7 +80,7 @@ src/camera.js          webcam helpers
 src/fakecam.js         simulated webcam for the preview and no-camera demo mode
 src/config.js          every tunable number
 src/assets.js          preloads the images in assets/
-assets/                Slender Man poses, scare face, upside down face for the two people round, Freddy jump scare
+assets/                event and sponsor logos, Drake pictures, Slender Man poses, scare face, upside down face for the two people round, Freddy jump scare
 scripts/download-assets.sh   offline copies of MediaPipe and models
 ```
 

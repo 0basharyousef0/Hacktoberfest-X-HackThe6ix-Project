@@ -237,6 +237,18 @@ button {
   text-align: center;
 }
 
+/* Title and checkbox wait for the intro, then rise in */
+.hc-site,
+.hc-widget {
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.hc-pending {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
 .hc-title {
   margin: 0 0 6px;
   font-size: 22px;
@@ -441,6 +453,35 @@ button {
   filter: saturate(0.75) contrast(1.05) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
 }
 
+.hc-logo-tile {
+  background: #fff;
+}
+
+.hc-logo-tile img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+}
+
+.hc-photo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hc-tile img {
+  display: block;
+  pointer-events: none;
+}
+
+.hc-tile-label {
+  padding: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2328;
+  text-align: center;
+}
+
 .hc-snapshot {
   filter: grayscale(1) contrast(1.15) brightness(0.9) sepia(0.15);
 }
@@ -574,6 +615,93 @@ button {
 
 .hc-verify:hover {
   background: #3d5d8c;
+}
+
+/* Event logos, each centered in the empty space beside the CAPTCHA */
+
+.event-logo {
+  position: fixed;
+  top: 50%;
+  width: clamp(140px, calc((100vw - 420px) / 2 - 64px), 260px);
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.event-logo.shown {
+  opacity: 1;
+}
+
+.event-logo.left {
+  left: calc((100vw - 420px) / 4);
+}
+
+.event-logo.right {
+  left: calc(100vw - (100vw - 420px) / 4);
+}
+
+/* Sits between the two logos until the player clicks the checkbox */
+.event-tagline {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: clamp(28px, 3.8vw, 58px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: #8a6414;
+  filter: drop-shadow(0 3px 5px rgba(60, 40, 0, 0.22));
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+/* Dark metallic gold, applied per span so it survives the typing effect */
+.event-tagline .typed {
+  background: linear-gradient(180deg, #c99a2e 0%, #a87a1c 45%, #6f4e0c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The untyped rest holds the final width, so the line types out left to right
+   while staying centered between the logos */
+.event-tagline .rest {
+  visibility: hidden;
+}
+
+.event-tagline .caret {
+  display: inline-block;
+  width: 0;
+  height: 0.9em;
+  margin-left: 2px;
+  border-left: 3px solid #8a6414;
+  vertical-align: -0.08em;
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.event-tagline.gone {
+  opacity: 0;
+}
+
+/* Not enough room beside the CAPTCHA on narrow screens */
+@media (max-width: 860px) {
+  .event-logo,
+  .event-tagline {
+    display: none;
+  }
 }
 
 /* CAPTCHA jump scare: fills the whole screen */

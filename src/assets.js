@@ -6,6 +6,15 @@ const PATHS = {
   scareFace: 'assets/scare-face.jpg',
   freddy: 'assets/freddy.png',
   peekFace: 'assets/peek-face.png',
+  // Sponsor round: drop the logo files into assets/sponsors with these names.
+  sponsors: [
+    { name: 'Shopify', src: 'assets/sponsors/shopify.png' },
+    { name: 'Google DeepMind Gemma 4', src: 'assets/sponsors/gemma.png', fit: 'cover' },
+    { name: 'DigitalOcean', src: 'assets/sponsors/digitalocean.png' },
+    { name: 'MLH', src: 'assets/sponsors/mlh.png', fit: 'cover' },
+  ],
+  // The wrong answers in the sponsor round.
+  drake: [1, 2, 3, 4, 5].map((n) => `assets/drake/drake-${n}.jpg`),
 };
 
 const urls = { ...PATHS, ...(window.DONT_BLINK_ASSETS || {}) };
@@ -50,5 +59,8 @@ export const ASSETS = {
   get freddy() {
     return entries.freddy.ok ? entries.freddy.img : null;
   },
+  // Plain paths for <img> tiles; a missing file shows a text label instead.
+  sponsorTiles: urls.sponsors,
+  drakeTiles: urls.drake,
   ready: Promise.all([...entries.slender, entries.scareFace, entries.freddy, entries.peekFace].map((e) => e.ready)),
 };
