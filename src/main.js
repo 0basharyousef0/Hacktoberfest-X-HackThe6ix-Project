@@ -26,7 +26,7 @@ if (PREVIEW) {
 }
 
 function show(id) {
-  for (const s of ['intro', 'captcha', 'getready', 'end']) $(s).classList.toggle('hidden', s !== id);
+  for (const s of ['intro', 'captcha', 'nameentry', 'getready', 'end']) $(s).classList.toggle('hidden', s !== id);
 }
 
 function cameraErrorMessage(err) {
@@ -61,22 +61,68 @@ async function getReady() {
   show(null);
 }
 
-async function run(source) {
+// The leaderboard lives only in memory: it survives Try again and Next player,
+// and disappears when the tab is closed or refreshed.
+const board = [];
+let entryId = 0;
+let currentEntry = null;
+let playerName = '';
+let source = null;
+
+function askName(prefill = '') {
+  show('nameentry');
+  const input = $('player-name');
+  const error = $('name-error');
+  input.value = prefill;
+  error.textContent = '';
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 60);
+  return new Promise((resolve) => {
+    $('name-form').onsubmit = (e) => {
+      e.preventDefault();
+      const name = input.value.trim().replace(/\s+/g, ' ');
+      if (!name) {
+        error.textContent = 'Type a name first, then press Enter.';
+        return;
+      }
+      $('name-form').onsubmit = null;
+      input.blur();
+      audio.click();
+      resolve(name.slice(0, 16));
+    };
+  });
+}
+
+function getGame() {
+  if (!game) {
+    game = new Game({
+      canvas: $('stage'),
+      video: source,
+      vision,
+      audio,
+      debugEl: DEBUG ? $('debug') : null,
+      onEnd: showEnd,
+    });
+  }
+  return game;
+}
+
+// Asks for a name unless the same player is going again.
+async function play({ askForName = true } = {}) {
+  if (askForName) playerName = await askName('');
+  await getReady();
+  getGame().start();
+}
+
+async function run() {
   document.documentElement.requestFullscreen?.().catch(() => {});
   if (!SKIP_CAPTCHA) {
     show('captcha');
     await runCaptcha({ root: $('captcha-root'), video: source, audio, vision });
   }
-  await getReady();
-  game = new Game({
-    canvas: $('stage'),
-    video: source,
-    vision,
-    audio,
-    debugEl: DEBUG ? $('debug') : null,
-    onEnd: showEnd,
-  });
-  game.start();
+  await play();
 }
 
 $('start').addEventListener('click', async () => {
@@ -85,7 +131,6 @@ $('start').addEventListener('click', async () => {
   $('intro-error').textContent = '';
   audio.unlock();
 
-  let source;
   try {
     source = await getSource(PREVIEW);
   } catch (err) {
@@ -95,28 +140,83 @@ $('start').addEventListener('click', async () => {
     $('demo').classList.remove('hidden');
     return;
   }
-  run(source);
+  run();
 });
 
 // Backup for a camera that will not cooperate during judging.
 $('demo').addEventListener('click', async () => {
   audio.unlock();
-  run(await getSource(true));
+  source = await getSource(true);
+  run();
 });
 
+function renderBoard() {
+  const body = $('board-body');
+  body.replaceChildren();
+  if (!board.length) {
+    const tr = document.createElement('tr');
+    tr.className = 'empty';
+    const td = document.createElement('td');
+    td.colSpan = 3;
+    td.textContent = 'No scores yet';
+    tr.appendChild(td);
+    body.appendChild(tr);
+    return;
+  }
+  board.forEach((entry, i) => {
+    const tr = document.createElement('tr');
+    if (entry === currentEntry) tr.className = 'you';
+    const rank = document.createElement('td');
+    rank.textContent = i + 1;
+    const name = document.createElement('td');
+    name.className = 'name';
+    name.textContent = entry.name; // textContent, so a name can never inject HTML
+    const time = document.createElement('td');
+    time.textContent = `${entry.seconds.toFixed(1)}s`;
+    tr.append(rank, name, time);
+    body.appendChild(tr);
+  });
+  body.querySelector('.you')?.scrollIntoView({ block: 'nearest' });
+}
+
 function showEnd({ seconds, blinks }) {
+  // One row per player. Names match ignoring capitals, so "bashar" and "Bashar" are the same row.
+  const key = playerName.toLowerCase();
+  let entry = board.find((e) => e.name.toLowerCase() === key);
+  let note = '';
+  if (entry) {
+    // A row keeps the player's best (longest) run.
+    if (seconds > entry.seconds) {
+      note = ' New best!';
+      entry.seconds = seconds;
+      entry.blinks = blinks;
+    } else {
+      note = ` Your best is still ${entry.seconds.toFixed(1)}s.`;
+    }
+  } else {
+    entry = { id: ++entryId, name: playerName, seconds, blinks };
+    board.push(entry);
+  }
+  currentEntry = entry;
+  // More seconds ranks higher. Ties go to whoever played first.
+  board.sort((a, b) => b.seconds - a.seconds || a.id - b.id);
+  const rank = board.indexOf(currentEntry) + 1;
   $('stage').classList.add('hidden');
-  $('end-stats').textContent = `You lasted ${seconds.toFixed(1)} seconds and blinked ${blinks} ${
+  $('end-stats').textContent = `${playerName}, you lasted ${seconds.toFixed(1)} seconds and blinked ${blinks} ${
     blinks === 1 ? 'time' : 'times'
-  }.`;
+  }.${note} You are #${rank} of ${board.length}.`;
+  renderBoard();
   setTimeout(() => show('end'), 400);
 }
 
-$('again').addEventListener('click', async () => {
+// Same player goes again: no name prompt, straight to the countdown, same leaderboard row.
+$('again').addEventListener('click', () => {
   audio.unlock();
-  await getReady();
-  game.start();
+  play({ askForName: false });
 });
 
-// Full run, CAPTCHA included, for the next person in line.
-$('next').addEventListener('click', () => location.reload());
+// Someone new: the full experience again, CAPTCHA included. The board is kept.
+$('next').addEventListener('click', () => {
+  audio.unlock();
+  run();
+});

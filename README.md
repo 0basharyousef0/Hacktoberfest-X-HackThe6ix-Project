@@ -12,6 +12,10 @@ Before you play, a perfectly normal "verify you're human" check slowly stops bei
 4. **The relief.** When it gets close enough, it vanishes. Silence.
 5. **Behind you.** It fades in behind you on the security camera view in the corner, composited *behind* your body using person segmentation. The next blink, or the moment you turn around to check and turn back, it gets you.
 
+## Leaderboard
+
+Before each round the player types a name. After the scare, the end screen shows a leaderboard of everyone who played in this browser tab, ranked by time with the longest survival at the top. Each name gets one row that keeps that player's best time. **Try again** skips the name prompt and updates the same row, and **Next player** runs the whole experience again for someone new. Scores live only in memory: closing or refreshing the tab clears them, and nothing is saved anywhere.
+
 ## Run it
 
 It has to be served over `localhost` (or HTTPS) because it uses ES modules and the webcam.

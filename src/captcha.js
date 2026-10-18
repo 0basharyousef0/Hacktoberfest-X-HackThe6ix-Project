@@ -87,6 +87,9 @@ const TEMPLATE = `
 `;
 
 export async function runCaptcha({ root, video, audio, vision }) {
+  // Reset the intro pieces outside the CAPTCHA so a second run (Next player) starts fresh.
+  document.querySelectorAll('.event-logo').forEach((logo) => logo.classList.remove('shown'));
+  document.querySelector('.event-tagline')?.classList.remove('gone');
   root.innerHTML = TEMPLATE;
   const $ = (sel) => root.querySelector(sel);
   const box = $('.hc-box');

@@ -32,6 +32,15 @@
       <img class="event-logo right" src="assets/logo-hackthe6ix.png" alt="Hack the 6ix" />
     </section>
 
+    <section id="nameentry" class="screen getready hidden">
+      <form id="name-form" class="getready-inner" autocomplete="off">
+        <h2>WHO DARES?</h2>
+        <p>Type your name for the leaderboard, then press Enter.</p>
+        <input id="player-name" type="text" maxlength="16" spellcheck="false" aria-label="Your name" placeholder="Your name" />
+        <p id="name-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
     <section id="getready" class="screen getready hidden">
       <div class="getready-inner">
         <h2>GET READY</h2>
@@ -47,6 +56,18 @@
       <div class="end-inner">
         <h2>YOU BLINKED.</h2>
         <p id="end-stats"></p>
+        <div class="board">
+          <div class="board-head">
+            <h3>Leaderboard</h3>
+            <span>Longest time wins</span>
+          </div>
+          <table>
+            <thead>
+              <tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Time</th></tr>
+            </thead>
+            <tbody id="board-body"></tbody>
+          </table>
+        </div>
         <div class="end-buttons">
           <button id="again" type="button">Try again</button>
           <button id="next" type="button" class="ghost">Next player</button>

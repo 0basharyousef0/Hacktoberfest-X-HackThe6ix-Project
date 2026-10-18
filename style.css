@@ -164,8 +164,9 @@ button {
   margin: 0 0 12px;
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
-  font-size: clamp(40px, 9vw, 80px);
+  font-size: clamp(30px, 6vw, 64px);
   letter-spacing: 0.1em;
+  white-space: nowrap;
   color: #c41414;
 }
 
@@ -189,6 +190,122 @@ button {
 
 .end-buttons button.ghost:hover {
   background: #1a1a1a;
+}
+
+/* ---------- Name entry ---------- */
+
+#player-name {
+  width: min(320px, 100%);
+  margin-top: 10px;
+  padding: 12px 16px;
+  border: 1px solid #5a1a1a;
+  border-radius: 4px;
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 22px;
+  text-align: center;
+}
+
+#player-name:focus {
+  outline: 2px solid #c41414;
+  outline-offset: 2px;
+}
+
+/* ---------- Leaderboard ---------- */
+
+.end-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(640px, 100%);
+}
+
+.board {
+  width: 100%;
+  margin: 0 0 26px;
+  border: 1px solid #3a1a1a;
+  border-radius: 6px;
+  background: #0b0b0b;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.board-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 16px 6px;
+}
+
+.board-head h3 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: #e6e6e6;
+}
+
+.board-head span {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8a8a;
+}
+
+.board table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.board th {
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #777;
+  text-align: left;
+}
+
+.board td {
+  padding: 9px 16px;
+  border-top: 1px solid #1d1d1d;
+  color: #cfcfcf;
+  text-align: left;
+}
+
+.board th:last-child,
+.board td:last-child {
+  text-align: right;
+}
+
+.board td:first-child,
+.board th:first-child {
+  width: 3em;
+  color: #777;
+}
+
+.board td.name {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board tr.you td {
+  background: #2a0a0a;
+  color: #fff;
+}
+
+.board tr.you td:first-child {
+  color: #ff6b6b;
+}
+
+.board .empty td {
+  text-align: center;
+  color: #777;
 }
 
 /* ---------- Debug ---------- */
