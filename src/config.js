@@ -27,12 +27,16 @@ export const CONFIG = {
     scareFallbackMinMs: 1200, // if the player never blinks or turns, scare anyway after this window
     scareFallbackMaxMs: 4000, // (short and random on purpose, so it lands before they expect it)
     turnAroundGraceMs: 140, // delay between the player's face reappearing and the scare
-    scareDurationMs: 1800,
+    scareDurationMs: 3800, // how long the full-screen face stays up
+    captchaScareMs: 3500, // how long Freddy stays up at the end of the CAPTCHA
+    leanInMs: 3000, // wait after the tiny note finishes typing before Freddy appears
+    getReadySeconds: 3, // countdown before the game starts
   },
 
   audio: {
     masterVolume: 0.9,
     scareVolume: 1.0,
+    screamSeconds: 3.9,
   },
 
   mediapipe: {

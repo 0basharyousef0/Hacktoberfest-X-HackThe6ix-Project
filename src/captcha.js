@@ -8,6 +8,7 @@
 //
 // "HumanCheck" is a made up brand on purpose. Do not restyle this to look like a real CAPTCHA product.
 
+import { CONFIG } from './config.js';
 import { drawMirrored } from './camera.js';
 import { drawStalker } from './monster.js';
 import { ASSETS } from './assets.js';
@@ -424,10 +425,20 @@ export async function runCaptcha({ root, video, audio, vision }) {
   box.classList.add('done');
   $('.hc-label').textContent = 'Verified';
   $('.hc-title').textContent = 'Verification complete.';
-  $('.hc-subtitle').textContent = 'Thanks! Loading the game...';
+  $('.hc-subtitle').textContent = 'Please read the note below before continuing.';
 
-  // Let them relax for a moment that never feels exactly the same length.
-  await sleep(1500 + Math.random() * 1000);
+  // Bait: a tiny, faint line typed out slowly so the player leans in to read it.
+  // Three seconds after it finishes, while their face is close to the screen, Freddy.
+  const note = document.createElement('p');
+  note.className = 'hc-fineprint';
+  $('.hc-page').appendChild(note);
+  await sleep(900);
+  await typeInto(
+    note,
+    'Note: for the best experience, sit close to your screen, stay very still, and keep reading until the game loads. Whatever happens, do not look behind you.',
+    38,
+  );
+  await sleep(CONFIG.phases.leanInMs);
   await jumpScare(ASSETS.freddy, audio);
   root.innerHTML = '';
 }
@@ -443,8 +454,8 @@ async function jumpScare(img, audio) {
     overlay.appendChild(pic);
   }
   document.body.appendChild(overlay);
-  audio.scream({ pitch: 0.8 });
-  await sleep(1500);
+  audio.scream({ pitch: 0.8, duration: CONFIG.phases.captchaScareMs / 1000 + 0.4 });
+  await sleep(CONFIG.phases.captchaScareMs);
   overlay.classList.add('gone');
   await sleep(700);
   // Remove after the game has painted its first black frame underneath.
@@ -485,5 +496,13 @@ async function typeTagline(el) {
     typed.textContent = text.slice(0, i);
     rest.textContent = text.slice(i);
     await sleep(text[i - 1] === ' ' ? 40 : 75);
+  }
+}
+
+async function typeInto(el, text, speed) {
+  el.textContent = '';
+  for (const ch of text) {
+    el.textContent += ch;
+    await sleep(ch === ' ' ? speed / 2 : speed);
   }
 }

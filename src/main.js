@@ -1,6 +1,6 @@
 // Wires the screens together: warning -> fake CAPTCHA -> game -> end screen.
 
-import { DEBUG, SKIP_CAPTCHA, PREVIEW } from './config.js';
+import { CONFIG, DEBUG, SKIP_CAPTCHA, PREVIEW } from './config.js';
 import { startCamera } from './camera.js';
 import { FakeCamera } from './fakecam.js';
 import { Vision } from './vision.js';
@@ -26,7 +26,7 @@ if (PREVIEW) {
 }
 
 function show(id) {
-  for (const s of ['intro', 'captcha', 'end']) $(s).classList.toggle('hidden', s !== id);
+  for (const s of ['intro', 'captcha', 'getready', 'end']) $(s).classList.toggle('hidden', s !== id);
 }
 
 function cameraErrorMessage(err) {
@@ -47,13 +47,27 @@ async function getSource(fake) {
   return video;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Countdown right before the hallway, telling the player not to blink or look away.
+async function getReady() {
+  show('getready');
+  const count = $('getready-count');
+  for (let n = CONFIG.phases.getReadySeconds; n > 0; n--) {
+    count.textContent = n;
+    audio.beep();
+    await sleep(1000);
+  }
+  show(null);
+}
+
 async function run(source) {
   document.documentElement.requestFullscreen?.().catch(() => {});
   if (!SKIP_CAPTCHA) {
     show('captcha');
     await runCaptcha({ root: $('captcha-root'), video: source, audio, vision });
   }
-  show(null);
+  await getReady();
   game = new Game({
     canvas: $('stage'),
     video: source,
@@ -98,8 +112,9 @@ function showEnd({ seconds, blinks }) {
   setTimeout(() => show('end'), 400);
 }
 
-$('again').addEventListener('click', () => {
-  show(null);
+$('again').addEventListener('click', async () => {
+  audio.unlock();
+  await getReady();
   game.start();
 });
 

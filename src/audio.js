@@ -289,6 +289,20 @@ export class SoundEngine {
     });
   }
 
+  // Countdown beep.
+  beep() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this._osc('sine', 660);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.25, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+    o.connect(g).connect(this.master);
+    o.start(t);
+    o.stop(t + 0.3);
+  }
+
   // Tiny UI tick for the CAPTCHA tiles.
   click() {
     if (!this.ctx) return;
@@ -330,17 +344,18 @@ export class SoundEngine {
 
   // The jump scare. A distorted multi-voice shriek, a noise crack and a sub boom.
   // opts.pitch shifts the whole shriek (below 1 sounds more mechanical).
-  scream({ pitch = 1 } = {}) {
+  // opts.duration is the total length in seconds, matched to how long the scare image stays up.
+  scream({ pitch = 1, duration = CONFIG.audio.screamSeconds } = {}) {
     if (!this.ctx) return;
     const ctx = this.ctx;
     const t = ctx.currentTime + 0.005;
-    const end = t + 1.9;
+    const end = t + duration;
     const vol = CONFIG.audio.scareVolume;
 
     const bus = ctx.createGain();
     bus.gain.setValueAtTime(0.0001, t);
     bus.gain.linearRampToValueAtTime(vol, t + 0.006);
-    bus.gain.setValueAtTime(vol, t + 0.9);
+    bus.gain.setValueAtTime(vol, end - 1.0);
     bus.gain.exponentialRampToValueAtTime(0.0001, end);
     bus.connect(this.master);
 

@@ -397,7 +397,7 @@ export function drawScareImage(ctx, W, H, elapsed) {
   const eased = 1 - Math.pow(1 - lunge, 3);
   // Starts already covering the whole screen, then lunges closer.
   const zoom = 1.06 + 0.1 * eased + elapsed / 9000 + Math.sin(elapsed / 40) * 0.006;
-  const shake = Math.max(0.2, 1 - elapsed / 1500);
+  const shake = Math.max(0.2, 1 - elapsed / 3000);
   const s = Math.min(W, H);
   const jx = (Math.random() - 0.5) * s * 0.06 * shake;
   const jy = (Math.random() - 0.5) * s * 0.06 * shake;

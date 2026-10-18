@@ -322,7 +322,7 @@ export class Game {
     st.scareStart = now;
     st.survived = (now - st.startedAt) / 1000;
     this.audio.stopAll();
-    this.audio.scream();
+    this.audio.scream({ duration: CONFIG.phases.scareDurationMs / 1000 + 0.1 });
   }
 
   _finish() {

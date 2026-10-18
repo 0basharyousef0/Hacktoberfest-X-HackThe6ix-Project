@@ -704,6 +704,56 @@ button {
   }
 }
 
+/* The tiny line that makes the player lean in */
+.hc-fineprint {
+  max-width: 340px;
+  min-height: 3em;
+  margin: 4px 0 0;
+  font-size: 8.5px;
+  line-height: 1.5;
+  color: #a4a9b0;
+  text-align: center;
+}
+
+/* Get ready screen between the CAPTCHA and the game */
+.getready {
+  background: #000;
+  text-align: center;
+}
+
+.getready-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.getready h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: clamp(34px, 6vw, 60px);
+  letter-spacing: 0.1em;
+  color: #c41414;
+}
+
+.getready p {
+  margin: 0;
+  color: #cfcfcf;
+  font-size: clamp(16px, 2.2vw, 20px);
+  line-height: 1.5;
+}
+
+.getready .count {
+  margin-top: 18px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(80px, 16vw, 150px);
+  line-height: 1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
 /* CAPTCHA jump scare: fills the whole screen */
 
 .jumpscare {
@@ -721,7 +771,7 @@ button {
   object-fit: cover;
   object-position: 50% 40%;
   filter: brightness(1.45) contrast(1.1) saturate(1.15);
-  animation: scare-lunge 0.12s ease-out forwards, scare-creep 1.4s 0.12s ease-in forwards;
+  animation: scare-lunge 0.12s ease-out forwards, scare-creep 3.4s 0.12s ease-in forwards;
 }
 
 .jumpscare.gone img {
