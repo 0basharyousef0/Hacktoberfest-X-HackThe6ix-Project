@@ -48,6 +48,6 @@ Pull requests welcome. New monsters, new CAPTCHA rounds, new sounds. See [CONTRI
 
 ## The fine print 📜
 
-The final scream is "Screamer Jumpscare" by freesound_community (via Pixabay). Freddy Fazbear belongs to Five Nights at Freddy's, the Drake photos are of a real person, the sponsor and event logos belong to their companies, and the other scary images came from the web. They're here for the hackathon demo. Swap them for your own art before you build on this.
+The final scream is "Screamer Jumpscare" by freesound_community (via Pixabay). Freddy Fazbear belongs to Five Nights at Freddy's, the Drake photos are of a real person, the sponsor and event logos belong to their companies, and the other scary images came from free sources.
 
 Code is [MIT](LICENSE). Don't blink. 💀
