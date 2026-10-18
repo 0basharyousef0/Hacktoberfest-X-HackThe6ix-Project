@@ -8,6 +8,8 @@ First you prove you're human. Easy, right? Traffic lights, sponsors, a few faces
 
 Then the real game starts. A tall figure waits at the end of a dark hallway, and every time you blink, it gets closer. Looking away won't save you either. Survive as long as you can to climb the leaderboard (if you can still read it).
 
+Both jump scares snap a polaroid of your face at the worst possible moment. 📸 Keep them on the **Reaction wall** for everyone to enjoy, or delete them forever. Kept photos live in this browser on this laptop and never get uploaded.
+
 It runs entirely in your browser. Your webcam footage never leaves your laptop.
 
 ## Summon it 🕯️
@@ -31,7 +33,8 @@ bash scripts/download-assets.sh
 - Sit them close to the screen, facing a light.
 - Don't warn them about the CAPTCHA.
 - If the camera won't cooperate, hit **Play without a camera**.
-- The leaderboard lasts until the tab is closed or refreshed, so don't refresh mid-event.
+- The leaderboard lasts until the tab is closed or refreshed, so don't refresh mid-event. The reaction wall sticks around for good.
+- To wipe the reaction wall, clear this site's data in your browser settings.
 
 ## For the mad scientists 🧪
 

@@ -31,6 +31,7 @@ export const CONFIG = {
     captchaScareMs: 3500, // how long Freddy stays up at the end of the CAPTCHA
     leanInMs: 3000, // wait after the tiny note finishes typing before Freddy appears
     getReadySeconds: 3, // countdown before the game starts
+    reactionShotMs: 650, // when the reaction photo is taken, measured from the start of each jump scare
   },
 
   audio: {

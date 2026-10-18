@@ -9,7 +9,7 @@
 // "HumanCheck" is a made up brand on purpose. Do not restyle this to look like a real CAPTCHA product.
 
 import { CONFIG } from './config.js';
-import { drawMirrored } from './camera.js';
+import { drawMirrored, snapshot } from './camera.js';
 import { drawStalker } from './monster.js';
 import { ASSETS } from './assets.js';
 
@@ -442,12 +442,16 @@ export async function runCaptcha({ root, video, audio, vision }) {
     38,
   );
   await sleep(CONFIG.phases.leanInMs);
-  await jumpScare(ASSETS.freddy, audio);
+  const freddyShot = await jumpScare(ASSETS.freddy, audio, video);
   root.innerHTML = '';
+  return { freddyShot };
 }
 
 // Full-screen jump scare that covers the whole page, with the scream.
-async function jumpScare(img, audio) {
+// Returns a reaction photo taken a split second after Freddy appears.
+async function jumpScare(img, audio, video) {
+  let shot = null;
+  setTimeout(() => (shot = snapshot(video)), CONFIG.phases.reactionShotMs);
   const overlay = document.createElement('div');
   overlay.className = 'jumpscare';
   if (img) {
@@ -463,6 +467,7 @@ async function jumpScare(img, audio) {
   await sleep(700);
   // Remove after the game has painted its first black frame underneath.
   setTimeout(() => overlay.remove(), 400);
+  return shot;
 }
 
 // Flips the face upside down. The image is already cut out of its background,

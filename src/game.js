@@ -12,7 +12,7 @@ import { CONFIG, DEBUG } from './config.js';
 import { BlinkDetector } from './vision.js';
 import { drawStalker, drawScareImage } from './monster.js';
 import { ASSETS } from './assets.js';
-import { drawMirrored } from './camera.js';
+import { drawMirrored, snapshot } from './camera.js';
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -321,6 +321,8 @@ export class Game {
     this._setPhase('scare', now);
     st.scareStart = now;
     st.survived = (now - st.startedAt) / 1000;
+    st.shot = null;
+    setTimeout(() => (st.shot = snapshot(this.video)), CONFIG.phases.reactionShotMs);
     this.audio.stopAll();
     const seconds = CONFIG.phases.scareDurationMs / 1000 + 0.1;
     // The recorded scream, or the synthesized one if the file could not be loaded.
@@ -336,7 +338,7 @@ export class Game {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.onEnd?.({ seconds: st.survived ?? 0, blinks: st.blinks });
+    this.onEnd?.({ seconds: st.survived ?? 0, blinks: st.blinks, shot: st.shot });
   }
 
   // ---------- Drawing ----------

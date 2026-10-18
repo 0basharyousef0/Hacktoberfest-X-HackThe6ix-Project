@@ -331,6 +331,25 @@ export class SoundEngine {
     return true;
   }
 
+  // Camera shutter for the polaroids.
+  shutter() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    for (const [at, len, freq] of [[0, 0.03, 3000], [0.07, 0.05, 1800]]) {
+      const n = this._noise();
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = freq;
+      bp.Q.value = 1.5;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.5, t + at);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + at + len);
+      n.connect(bp).connect(g).connect(this.master);
+      n.start(t + at);
+      n.stop(t + at + len + 0.02);
+    }
+  }
+
   // Countdown beep.
   beep() {
     if (!this.ctx) return;

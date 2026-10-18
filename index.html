@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" />
     <video id="cam" playsinline muted></video>
 
     <section id="intro" class="screen intro">
@@ -15,7 +16,8 @@
         <h1 class="title">DON'T BLINK</h1>
         <p class="tag">It only moves when your eyes are closed.</p>
         <ul class="warn">
-          <li id="warn-camera">Uses your webcam. Nothing is recorded or uploaded. All tracking runs in your browser.</li>
+          <li id="warn-camera">Uses your webcam. All tracking runs in your browser and nothing is uploaded.</li>
+          <li>Takes two reaction photos during the scares. At the end you choose to keep them on this laptop's photo wall or delete them.</li>
           <li>Contains a loud jump scare and sudden motion. No strobe lights.</li>
           <li>Wear headphones for the full effect.</li>
         </ul>
@@ -56,6 +58,13 @@
       <div class="end-inner">
         <h2>YOU BLINKED.</h2>
         <p id="end-stats"></p>
+        <div class="keep hidden" id="keep">
+          <p id="keep-text">Keep your reaction photos on the wall?</p>
+          <div class="keep-buttons" id="keep-buttons">
+            <button id="keep-yes" type="button">Keep them</button>
+            <button id="keep-no" type="button" class="ghost">Delete them</button>
+          </div>
+        </div>
         <div class="board">
           <div class="board-head">
             <h3>Leaderboard</h3>
@@ -73,6 +82,20 @@
           <button id="next" type="button" class="ghost">Next player</button>
           <button id="quit" type="button" class="ghost">Quit</button>
         </div>
+        <button id="wall-open" type="button" class="wall-btn">
+          <span aria-hidden="true">&#x1F4F7;</span> Reaction wall <span class="wall-count" id="wall-count">0</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="wall" class="screen wall hidden">
+      <div class="wall-inner">
+        <header class="wall-head">
+          <h2>REACTION WALL</h2>
+          <p id="wall-sub">Everyone who kept their photos.</p>
+          <button id="wall-back" type="button" class="ghost">Back</button>
+        </header>
+        <div class="wall-grid" id="wall-grid"></div>
       </div>
     </section>
 

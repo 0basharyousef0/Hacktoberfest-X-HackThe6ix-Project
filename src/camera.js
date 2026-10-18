@@ -36,3 +36,20 @@ export function drawMirrored(ctx, video, dx, dy, dw, dh, crop = { x: 0, y: 0, w:
   ctx.drawImage(video, sx, sy, sw, sh, 0, 0, dw, dh);
   ctx.restore();
 }
+
+// Takes a square, mirrored photo from the webcam (or the simulated feed) as a JPEG data URL.
+export function snapshot(source, size = 420) {
+  const vw = source?.videoWidth || source?.width;
+  const vh = source?.videoHeight || source?.height;
+  if (!vw || !vh) return null;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const cw = Math.min(1, vh / vw);
+  const ch = Math.min(1, vw / vh);
+  drawMirrored(c.getContext('2d'), source, 0, 0, size, size, { x: (1 - cw) / 2, y: (1 - ch) / 2, w: cw, h: ch });
+  try {
+    return c.toDataURL('image/jpeg', 0.86);
+  } catch {
+    return null;
+  }
+}

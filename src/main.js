@@ -8,6 +8,7 @@ import { SoundEngine } from './audio.js';
 import { runCaptcha } from './captcha.js';
 import { Game } from './game.js';
 import { ASSETS } from './assets.js';
+import { keepPhotos, allPhotos, photoCount } from './wall.js';
 
 const $ = (id) => document.getElementById(id);
 const video = $('cam');
@@ -27,7 +28,7 @@ if (PREVIEW) {
 }
 
 function show(id) {
-  for (const s of ['intro', 'captcha', 'nameentry', 'getready', 'end']) $(s).classList.toggle('hidden', s !== id);
+  for (const s of ['intro', 'captcha', 'nameentry', 'getready', 'end', 'wall']) $(s).classList.toggle('hidden', s !== id);
 }
 
 function cameraErrorMessage(err) {
@@ -69,6 +70,11 @@ let entryId = 0;
 let currentEntry = null;
 let playerName = '';
 let source = null;
+
+// Reaction photos: Freddy's is taken during the CAPTCHA, the hallway one at the final scare.
+// They wait here until the player chooses Keep (saved to the wall) or Delete (gone for good).
+let freddyShot = null;
+let pendingShots = [];
 
 function askName(prefill = '') {
   show('nameentry');
@@ -121,7 +127,8 @@ async function run() {
   document.documentElement.requestFullscreen?.().catch(() => {});
   if (!SKIP_CAPTCHA) {
     show('captcha');
-    await runCaptcha({ root: $('captcha-root'), video: source, audio, vision });
+    const result = await runCaptcha({ root: $('captcha-root'), video: source, audio, vision });
+    freddyShot = result?.freddyShot || null;
   }
   await play();
 }
@@ -183,7 +190,7 @@ function renderBoard() {
   body.querySelector('.you')?.scrollIntoView({ block: 'nearest' });
 }
 
-function showEnd({ seconds, blinks }) {
+function showEnd({ seconds, blinks, shot }) {
   // One row per player. Names match ignoring capitals, so "bashar" and "Bashar" are the same row.
   const key = playerName.toLowerCase();
   let entry = board.find((e) => e.name.toLowerCase() === key);
@@ -210,18 +217,32 @@ function showEnd({ seconds, blinks }) {
     blinks === 1 ? 'time' : 'times'
   }.${note} You are #${rank} of ${board.length}.`;
   renderBoard();
-  setTimeout(() => show('end'), 400);
+
+  pendingShots = [
+    freddyShot && { scare: 'Freddy', dataUrl: freddyShot },
+    shot && { scare: 'The hallway', dataUrl: shot },
+  ].filter(Boolean);
+  freddyShot = null;
+  setupKeepPrompt();
+  updateWallCount();
+
+  setTimeout(async () => {
+    show('end');
+    if (pendingShots.length) await revealPolaroids(pendingShots);
+  }, 400);
 }
 
 // Same player goes again: no name prompt, straight to the countdown, same leaderboard row.
 $('again').addEventListener('click', () => {
   audio.unlock();
+  discardPending();
   play({ askForName: false });
 });
 
 // Someone new: the full experience again, CAPTCHA included. The board is kept.
 $('next').addEventListener('click', () => {
   audio.unlock();
+  discardPending();
   run();
 });
 
@@ -229,6 +250,7 @@ $('next').addEventListener('click', () => {
 // The leaderboard is kept until the tab is closed or refreshed.
 $('quit').addEventListener('click', () => {
   audio.click();
+  discardPending();
   if (source === video && video.srcObject) {
     video.srcObject.getTracks().forEach((track) => track.stop());
     video.srcObject = null;
@@ -239,3 +261,145 @@ $('quit').addEventListener('click', () => {
   $('intro-error').textContent = '';
   show('intro');
 });
+
+// ---------- Reaction photos ----------
+
+const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
+const tilt = () => `${(Math.random() * 10 - 5).toFixed(1)}deg`;
+
+function makePolaroid({ dataUrl, scare, name }, { unsaved = false } = {}) {
+  const card = document.createElement('figure');
+  card.className = 'polaroid';
+  card.style.setProperty('--tilt', tilt());
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  img.alt = `${name} reacting to ${scare}`;
+  const cap = document.createElement('figcaption');
+  cap.className = 'cap';
+  cap.textContent = name;
+  const sub = document.createElement('span');
+  sub.className = 'sub';
+  sub.textContent = scare;
+  card.append(img, cap, sub);
+  if (unsaved) {
+    const r = document.createElement('span');
+    r.className = 'ribbon';
+    r.textContent = 'Not saved yet';
+    card.appendChild(r);
+  }
+  return card;
+}
+
+// Shows the photos big over the end screen, then shrinks them into the Reaction wall button.
+async function revealPolaroids(shots) {
+  const overlay = document.createElement('div');
+  overlay.className = 'reveal';
+  const cards = shots.map((s) => makePolaroid({ ...s, name: playerName }));
+  overlay.append(...cards);
+  document.body.appendChild(overlay);
+  audio.shutter?.();
+  await sleepMs(3000);
+
+  const target = $('wall-open').getBoundingClientRect();
+  const tx = target.left + target.width / 2;
+  const ty = target.top + target.height / 2;
+  overlay.classList.add('leaving');
+  await Promise.all(
+    cards.map((card, i) => {
+      const r = card.getBoundingClientRect();
+      const dx = tx - (r.left + r.width / 2);
+      const dy = ty - (r.top + r.height / 2);
+      return card
+        .animate(
+          [
+            { transform: `rotate(${card.style.getPropertyValue('--tilt')})`, opacity: 1 },
+            { transform: `translate(${dx}px, ${dy}px) scale(0.06) rotate(20deg)`, opacity: 0.3 },
+          ],
+          { duration: 750, delay: i * 120, easing: 'cubic-bezier(0.55, 0, 0.75, 0.2)', fill: 'forwards' },
+        )
+        .finished.catch(() => {});
+    }),
+  );
+  overlay.remove();
+  const btn = $('wall-open');
+  btn.classList.remove('bump');
+  void btn.offsetWidth;
+  btn.classList.add('bump');
+}
+
+function setupKeepPrompt() {
+  const keep = $('keep');
+  const n = pendingShots.length;
+  keep.classList.toggle('hidden', n === 0);
+  $('keep-buttons').classList.remove('hidden');
+  $('keep-text').textContent =
+    n === 2
+      ? 'Keep your 2 reaction photos on the wall? Kept photos stay on this laptop for good. Deleted ones are gone for good.'
+      : 'Keep your reaction photo on the wall? Kept photos stay on this laptop for good. Deleted ones are gone for good.';
+}
+
+function discardPending() {
+  pendingShots = [];
+  $('keep').classList.add('hidden');
+}
+
+async function updateWallCount() {
+  const saved = await photoCount().catch(() => 0);
+  $('wall-count').textContent = saved + pendingShots.length;
+}
+
+$('keep-yes').addEventListener('click', async () => {
+  audio.click();
+  const photos = pendingShots.map((s) => ({ ...s, name: playerName }));
+  pendingShots = [];
+  $('keep-buttons').classList.add('hidden');
+  try {
+    await keepPhotos(photos);
+    $('keep-text').textContent = 'Saved to the reaction wall. They stay until someone clears this browser.';
+  } catch (err) {
+    console.error(err);
+    $('keep-text').textContent = 'This browser would not save them, so they were not kept.';
+  }
+  updateWallCount();
+});
+
+$('keep-no').addEventListener('click', () => {
+  audio.click();
+  pendingShots = [];
+  $('keep-buttons').classList.add('hidden');
+  $('keep-text').textContent = 'Deleted. Those photos are gone for good.';
+  updateWallCount();
+});
+
+async function renderWall() {
+  const grid = $('wall-grid');
+  grid.replaceChildren();
+  const unsaved = pendingShots.map((s) => makePolaroid({ ...s, name: playerName }, { unsaved: true }));
+  const saved = (await allPhotos().catch(() => [])).map((p) => makePolaroid(p));
+  const total = unsaved.length + saved.length;
+  $('wall-sub').textContent = total
+    ? `${saved.length} kept photo${saved.length === 1 ? '' : 's'}${unsaved.length ? `, plus ${unsaved.length} of yours waiting for you to choose` : ''}.`
+    : 'No reaction photos yet. Be the first.';
+  if (!total) {
+    const empty = document.createElement('p');
+    empty.className = 'wall-empty';
+    empty.textContent = 'Nobody has kept their photos yet.';
+    grid.appendChild(empty);
+    return;
+  }
+  grid.append(...unsaved, ...saved);
+}
+
+$('wall-open').addEventListener('click', async () => {
+  audio.click();
+  await renderWall();
+  show('wall');
+  $('wall').scrollTop = 0;
+});
+
+$('wall-back').addEventListener('click', () => {
+  audio.click();
+  show('end');
+});
+
+updateWallCount();
