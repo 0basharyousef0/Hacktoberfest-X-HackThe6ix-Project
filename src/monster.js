@@ -418,3 +418,93 @@ export function drawScareImage(ctx, W, H, elapsed) {
 
   scareFx(ctx, W, H, elapsed, shake);
 }
+
+/**
+ * Lurker with an elongated neck and eight eyes.
+ * (x, footY) is where its feet touch the floor; h is its full height in pixels.
+ * opts.time animates the sway, opts.alpha its opacity, opts.light how lit it is.
+ */
+export function drawLongneck(ctx, x, footY, h, opts = {}) {
+  const { time = 0, alpha = 1, light = 1 } = opts;
+  if (h < 2 || alpha <= 0) return;
+  const u = h;
+
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.translate(x + Math.sin(time * 0.6) * u * 0.006, footY);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // Squat hunched body
+  const bodyGrad = ctx.createRadialGradient(0, -0.14 * u, u * 0.02, 0, -0.14 * u, u * 0.16);
+  bodyGrad.addColorStop(0, rgb(mix(DARK, PALE_MID, light * 0.5)));
+  bodyGrad.addColorStop(1, '#0a0a0a');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, -0.15 * u, 0.11 * u, 0.15 * u, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Stubby legs
+  ctx.strokeStyle = '#0a0a0a';
+  ctx.lineWidth = u * 0.03;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(side * 0.05 * u, -0.05 * u);
+    ctx.lineTo(side * 0.06 * u, 0);
+    ctx.stroke();
+  }
+
+  // Long swaying neck
+  const sway = Math.sin(time * 0.8) * 0.02;
+  const headX = (0.02 + sway) * u;
+  const headY = -0.78 * u;
+  ctx.strokeStyle = '#0c0c0c';
+  ctx.lineWidth = u * 0.045;
+  ctx.beginPath();
+  ctx.moveTo(0.02 * u, -0.26 * u);
+  ctx.quadraticCurveTo((0.02 + sway * 0.5) * u, -0.52 * u, headX, headY);
+  ctx.stroke();
+
+  // Head
+  const hw = 0.075 * u, hh = 0.06 * u;
+  const skin = ctx.createRadialGradient(headX - hw * 0.3, headY - hh * 0.3, hw * 0.1, headX, headY, hw * 1.2);
+  skin.addColorStop(0, rgb(mix(DARK, PALE, light)));
+  skin.addColorStop(0.7, rgb(mix(DARK, PALE_MID, light)));
+  skin.addColorStop(1, rgb(mix(DARK, PALE_EDGE, light * 0.6)));
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.ellipse(headX, headY, hw, hh, sway * 0.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eight eyes: two rows of four
+  const eyeRows = [-0.35, 0.25];
+  ctx.fillStyle = '#000';
+  eyeRows.forEach((row) => {
+    for (let i = 0; i < 4; i++) {
+      const ex = headX + (i - 1.5) * hw * 0.42;
+      const ey = headY + row * hh;
+      ctx.beginPath();
+      ctx.ellipse(ex, ey, hw * 0.13, hh * 0.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // Red glints, same as the other creatures
+  if (light > 0.3) {
+    ctx.fillStyle = `rgba(255,42,26,${0.85 * light})`;
+    ctx.shadowColor = 'rgba(255,42,26,0.9)';
+    ctx.shadowBlur = Math.max(2, hw * 0.2);
+    eyeRows.forEach((row) => {
+      for (let i = 0; i < 4; i++) {
+        const ex = headX + (i - 1.5) * hw * 0.42;
+        const ey = headY + row * hh;
+        ctx.beginPath();
+        ctx.arc(ex, ey, Math.max(0.5, hw * 0.03), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.restore();
+}
