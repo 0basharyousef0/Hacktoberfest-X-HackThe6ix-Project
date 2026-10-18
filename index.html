@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Don't Blink</title>
+    <meta name="description" content="A webcam horror game. It only moves when your eyes are closed." />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <video id="cam" playsinline muted></video>
+
+    <section id="intro" class="screen intro">
+      <div class="intro-inner">
+        <h1 class="title">DON'T BLINK</h1>
+        <p class="tag">It only moves when your eyes are closed.</p>
+        <ul class="warn">
+          <li id="warn-camera">Uses your webcam. Nothing is recorded or uploaded. All tracking runs in your browser.</li>
+          <li>Contains a loud jump scare and sudden motion. No strobe lights.</li>
+          <li>Wear headphones for the full effect.</li>
+        </ul>
+        <button id="start" type="button">Enable camera and begin</button>
+        <p id="intro-error" class="error" role="alert"></p>
+        <button id="demo" type="button" class="ghost hidden">Play without a camera</button>
+      </div>
+    </section>
+
+    <section id="captcha" class="screen captcha hidden">
+      <div id="captcha-root"></div>
+    </section>
+
+    <canvas id="stage" class="hidden"></canvas>
+
+    <section id="end" class="screen end hidden">
+      <div class="end-inner">
+        <h2>YOU BLINKED.</h2>
+        <p id="end-stats"></p>
+        <div class="end-buttons">
+          <button id="again" type="button">Try again</button>
+          <button id="next" type="button" class="ghost">Next player</button>
+        </div>
+      </div>
+    </section>
+
+    <pre id="debug" class="hidden"></pre>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

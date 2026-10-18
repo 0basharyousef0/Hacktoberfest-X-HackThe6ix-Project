@@ -1,0 +1,691 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: #ddd;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* The webcam element only feeds the canvases; keep it alive but invisible. */
+#cam {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+
+/* ---------- Intro ---------- */
+
+.intro {
+  background: radial-gradient(ellipse at 50% 40%, #1a0707 0%, #000 70%);
+}
+
+.intro-inner {
+  max-width: 520px;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: clamp(44px, 10vw, 92px);
+  letter-spacing: 0.12em;
+  color: #c41414;
+  text-shadow: 0 0 24px rgba(196, 20, 20, 0.35);
+}
+
+.tag {
+  margin: 8px 0 28px;
+  color: #9a9a9a;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+}
+
+.warn {
+  list-style: none;
+  padding: 16px 20px;
+  margin: 0 0 28px;
+  text-align: left;
+  border: 1px solid #3a1a1a;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #b8b8b8;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.warn li + li {
+  margin-top: 8px;
+}
+
+.warn li::before {
+  content: '\25B8';
+  color: #c41414;
+  margin-right: 8px;
+}
+
+#start,
+.end-buttons button {
+  border: 1px solid #c41414;
+  background: #c41414;
+  color: #fff;
+  padding: 12px 26px;
+  border-radius: 4px;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  transition: background 0.2s, transform 0.1s;
+}
+
+#start:hover,
+.end-buttons button:hover {
+  background: #a50f0f;
+}
+
+#start:active,
+.end-buttons button:active {
+  transform: scale(0.98);
+}
+
+#demo.ghost {
+  border: 1px solid #555;
+  background: transparent;
+  color: #ddd;
+  padding: 10px 22px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+#demo.ghost:hover {
+  background: #1a1a1a;
+}
+
+#start:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.error {
+  min-height: 1.4em;
+  margin-top: 14px;
+  color: #ff6b6b;
+  font-size: 14px;
+}
+
+/* ---------- Game ---------- */
+
+#stage {
+  position: fixed;
+  inset: 0;
+  display: block;
+  background: #000;
+  cursor: none;
+}
+
+/* ---------- End ---------- */
+
+.end {
+  background: #000;
+  text-align: center;
+}
+
+.end h2 {
+  margin: 0 0 12px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: clamp(40px, 9vw, 80px);
+  letter-spacing: 0.1em;
+  color: #c41414;
+}
+
+#end-stats {
+  color: #9a9a9a;
+  margin: 0 0 28px;
+}
+
+.end-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.end-buttons button.ghost {
+  background: transparent;
+  color: #ddd;
+  border-color: #555;
+}
+
+.end-buttons button.ghost:hover {
+  background: #1a1a1a;
+}
+
+/* ---------- Debug ---------- */
+
+#debug:empty {
+  display: none;
+}
+
+#debug {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 50;
+  margin: 0;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #6f6;
+  font: 12px/1.45 ui-monospace, Menlo, Consolas, monospace;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* ---------- Fake CAPTCHA (deliberately mundane) ---------- */
+
+.captcha {
+  background: #f3f4f6;
+  color: #222;
+  align-items: flex-start;
+  padding-top: clamp(16px, 5vh, 56px);
+}
+
+#captcha-root {
+  width: 100%;
+  max-width: 420px;
+  transition: opacity 0.9s, filter 0.3s;
+}
+
+.hc-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.hc-site {
+  text-align: center;
+}
+
+.hc-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f2328;
+  min-height: 1.3em;
+}
+
+.hc-subtitle {
+  margin: 0;
+  color: #57606a;
+  font-size: 15px;
+  min-height: 1.3em;
+}
+
+.hc-widget {
+  width: 304px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: #f9f9f9;
+  border: 1px solid #d3d3d3;
+  border-radius: 3px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+}
+
+.hc-box {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  padding: 0;
+  background: #fff;
+  border: 2px solid #c1c1c1;
+  border-radius: 2px;
+}
+
+.hc-box:hover {
+  border-color: #b2b2b2;
+}
+
+.hc-spinner,
+.hc-tick {
+  position: absolute;
+  inset: -2px;
+  display: none;
+}
+
+.hc-box.loading {
+  border-color: transparent;
+  background: transparent;
+}
+
+.hc-box.loading .hc-spinner {
+  display: block;
+  border: 3px solid #cfe0f5;
+  border-top-color: #4a6fa5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.hc-box.done {
+  border-color: transparent;
+  background: transparent;
+}
+
+.hc-box.done .hc-tick {
+  display: block;
+  fill: none;
+  stroke: #1f9d55;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hc-label {
+  flex: 1;
+  font-size: 14px;
+  color: #000;
+}
+
+.hc-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 64px;
+  color: #555;
+  text-align: center;
+}
+
+.hc-brand svg {
+  width: 30px;
+  height: 30px;
+}
+
+.hc-brand-name {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.hc-brand-links {
+  font-size: 8px;
+  color: #777;
+}
+
+/* Sized so the whole challenge fits on a short laptop screen without scrolling. */
+.hc-challenge {
+  width: max(300px, min(400px, 100%, calc(100vh - 400px)));
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  padding: 7px;
+  transition: opacity 0.25s;
+}
+
+.hc-challenge.shake {
+  animation: hc-shake 0.35s ease;
+}
+
+@keyframes hc-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+.hc-challenge.reloading {
+  opacity: 0.35;
+}
+
+.hc-header {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 18px;
+  background: #4a6fa5;
+  color: #fff;
+  min-height: 104px;
+}
+
+.hc-pre,
+.hc-post {
+  font-size: 14px;
+}
+
+.hc-target {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 2px 0 4px;
+}
+
+.hc-target:empty {
+  display: none;
+}
+
+.hc-body {
+  margin-top: 7px;
+}
+
+.hc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.hc-tile {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease;
+}
+
+.hc-tile canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hc-emoji {
+  font-size: clamp(38px, 10vw, 56px);
+  filter: saturate(0.75) contrast(1.05) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+}
+
+.hc-snapshot {
+  filter: grayscale(1) contrast(1.15) brightness(0.9) sepia(0.15);
+}
+
+.hc-grid.live .hc-tile canvas {
+  filter: grayscale(1) contrast(1.15) brightness(0.85);
+}
+
+.hc-tile.sel {
+  transform: scale(0.84);
+}
+
+.hc-tile.sel::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #4a6fa5
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 16px no-repeat;
+}
+
+.hc-tile.pulse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 3px solid #d93025;
+  pointer-events: none;
+}
+
+.hc-question {
+  padding: 34px 18px 30px;
+  text-align: center;
+}
+
+.hc-q-small {
+  margin: 0 0 6px;
+  color: #57606a;
+  font-size: 14px;
+}
+
+.hc-q-big {
+  margin: 0 0 22px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f2328;
+}
+
+.hc-q-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.hc-q-buttons button {
+  min-width: 96px;
+  padding: 10px 18px;
+  border: 1px solid #c8ccd1;
+  border-radius: 3px;
+  background: #fff;
+  color: #1f2328;
+  font-size: 15px;
+}
+
+.hc-q-buttons button:hover:not(:disabled) {
+  background: #f0f2f5;
+}
+
+.hc-q-buttons button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.hc-msg {
+  min-height: 24px;
+  padding: 6px 4px 0;
+  font-size: 14px;
+}
+
+.hc-msg.error {
+  color: #d93025;
+}
+
+.hc-msg.ok {
+  color: #1f9d55;
+}
+
+.hc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #e3e3e3;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.hc-tools {
+  display: flex;
+  gap: 4px;
+}
+
+.hc-tools button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #6b6b6b;
+  font-size: 18px;
+  border-radius: 3px;
+}
+
+.hc-tools button:hover {
+  background: #f0f0f0;
+}
+
+.hc-verify {
+  border: 0;
+  background: #4a6fa5;
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 2px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hc-verify:hover {
+  background: #3d5d8c;
+}
+
+/* CAPTCHA jump scare: fills the whole screen */
+
+.jumpscare {
+  position: fixed;
+  inset: -5%; /* oversized so the shake never shows an edge */
+  z-index: 1000;
+  background: #000;
+  overflow: hidden;
+  animation: scare-shake 0.07s steps(2) infinite;
+}
+
+.jumpscare img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 40%;
+  filter: brightness(1.45) contrast(1.1) saturate(1.15);
+  animation: scare-lunge 0.12s ease-out forwards, scare-creep 1.4s 0.12s ease-in forwards;
+}
+
+.jumpscare.gone img {
+  display: none;
+}
+
+.jumpscare.gone {
+  animation: none;
+}
+
+@keyframes scare-lunge {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes scare-creep {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes scare-shake {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-1.5%, 1%);
+  }
+  100% {
+    transform: translate(1.5%, -1%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jumpscare,
+  .jumpscare img {
+    animation: none;
+  }
+  .jumpscare img {
+    transform: scale(1.1);
+  }
+}
+
+/* The turn */
+
+#captcha-root.glitching {
+  animation: glitch 0.12s steps(2) infinite;
+}
+
+/* Jitter and color shift only. No inverts, so nothing strobes bright and dark. */
+@keyframes glitch {
+  0% {
+    transform: translate(0, 0) skewX(0deg);
+    filter: none;
+  }
+  25% {
+    transform: translate(-6px, 2px) skewX(3deg);
+    filter: hue-rotate(160deg) saturate(2);
+  }
+  50% {
+    transform: translate(5px, -3px) skewX(-2deg);
+    filter: grayscale(1) contrast(1.4);
+  }
+  75% {
+    transform: translate(-3px, 4px) skewX(1deg);
+    filter: hue-rotate(-90deg) blur(1px);
+  }
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+}
+
+#captcha-root.blackout {
+  opacity: 0;
+}
+
+.captcha:has(#captcha-root.blackout) {
+  background: #000;
+  transition: background 0.8s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #captcha-root.glitching {
+    animation: none;
+    filter: grayscale(1) contrast(1.6);
+  }
+}
