@@ -10,7 +10,7 @@
 
 import { CONFIG, DEBUG } from './config.js';
 import { BlinkDetector } from './vision.js';
-import { drawStalker, drawScareImage } from './monster.js';
+import { drawStalker, drawScareImage, drawLongneck } from './monster.js';
 import { ASSETS } from './assets.js';
 import { drawMirrored, snapshot } from './camera.js';
 
