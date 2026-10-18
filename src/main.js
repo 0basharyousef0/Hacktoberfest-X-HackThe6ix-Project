@@ -132,7 +132,8 @@ $('start').addEventListener('click', async () => {
   audio.unlock();
 
   try {
-    source = await getSource(PREVIEW);
+    // After Quit the simulated camera is kept; a real camera is switched off and asked for again.
+    if (!source) source = await getSource(PREVIEW);
   } catch (err) {
     console.error(err);
     btn.disabled = false;
@@ -219,4 +220,19 @@ $('again').addEventListener('click', () => {
 $('next').addEventListener('click', () => {
   audio.unlock();
   run();
+});
+
+// Back to the title screen. Turns the webcam off and leaves fullscreen.
+// The leaderboard is kept until the tab is closed or refreshed.
+$('quit').addEventListener('click', () => {
+  audio.click();
+  if (source === video && video.srcObject) {
+    video.srcObject.getTracks().forEach((track) => track.stop());
+    video.srcObject = null;
+    source = null;
+  }
+  if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  $('start').disabled = false;
+  $('intro-error').textContent = '';
+  show('intro');
 });
