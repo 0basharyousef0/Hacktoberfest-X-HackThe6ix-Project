@@ -45,12 +45,18 @@ bash scripts/download-assets.sh
 
 Built with MediaPipe for blink and body tracking, plain canvas for the hallway, and Web Audio for the creaks and heartbeats. No frameworks, no build step.
 
+## The scream judge 🤖
+
+After the final scare, your reaction polaroids go to an AI on **DigitalOcean serverless inference** (Gemma 4 first, with a backup vision model). It plays the creature: it stamps a terror rating on your photos, writes a caption for each, and taunts you by name. The photos are only passed through to the model, not stored.
+
+It lives in `api/`, a tiny Node server with no dependencies, so your model access key never reaches the browser. On App Platform, add it as a **Web Service** component with source directory `api`, route `/api`, and an encrypted `MODEL_ACCESS_KEY` environment variable. Without it, the game still works and just skips the judging.
+
 ## Want to make it scarier? 🕸️
 
 Pull requests welcome. New monsters, new CAPTCHA rounds, new sounds. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## The fine print 📜
 
-The final scream is "Screamer Jumpscare" by freesound_community (via Pixabay). Freddy Fazbear belongs to Five Nights at Freddy's, the Drake photos are of a real person, the sponsor and event logos belong to their companies, and the other scary images came from free sources.
+The final scream is "Screamer Jumpscare" by freesound_community (via Pixabay). Freddy Fazbear belongs to Five Nights at Freddy's, the Drake photos are of a real person, the sponsor and event logos belong to their companies, and the other scary images came from the web. They're here for the hackathon demo. Swap them for your own art before you build on this.
 
 Code is [MIT](LICENSE). Don't blink. 💀

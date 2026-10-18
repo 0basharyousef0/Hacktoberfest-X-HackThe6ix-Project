@@ -9,6 +9,7 @@ import { runCaptcha } from './captcha.js';
 import { Game } from './game.js';
 import { ASSETS } from './assets.js';
 import { keepPhotos, allPhotos, photoCount } from './wall.js';
+import { judgeReactions } from './judge.js';
 
 const $ = (id) => document.getElementById(id);
 const video = $('cam');
@@ -75,6 +76,7 @@ let source = null;
 // They wait here until the player chooses Keep (saved to the wall) or Delete (gone for good).
 let freddyShot = null;
 let pendingShots = [];
+let pendingVerdict = Promise.resolve(null);
 
 function askName(prefill = '') {
   show('nameentry');
@@ -226,9 +228,25 @@ function showEnd({ seconds, blinks, shot }) {
   setupKeepPrompt();
   updateWallCount();
 
+  // Send the photos to the AI scream judge on DigitalOcean while the polaroids develop.
+  $('taunt').textContent = '';
+  const shots = pendingShots;
+  const verdict = judgeReactions({ name: playerName, seconds, blinks, photos: shots }).then((result) => {
+    if (result) {
+      shots.forEach((s, i) => {
+        s.rating = result.rating;
+        s.caption = result.captions?.[i] || '';
+      });
+      if (result.taunt) $('taunt').textContent = `\u201C${result.taunt}\u201D`;
+    }
+    return result;
+  });
+
+  pendingVerdict = verdict;
+
   setTimeout(async () => {
     show('end');
-    if (pendingShots.length) await revealPolaroids(pendingShots);
+    if (shots.length) await revealPolaroids(shots, verdict);
   }, 400);
 }
 
@@ -267,7 +285,22 @@ $('quit').addEventListener('click', () => {
 const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
 const tilt = () => `${(Math.random() * 10 - 5).toFixed(1)}deg`;
 
-function makePolaroid({ dataUrl, scare, name }, { unsaved = false } = {}) {
+function fillVerdict(card, { rating, caption }) {
+  const stamp = card.querySelector('.stamp');
+  if (rating) {
+    stamp.textContent = `Terror ${rating}/10`;
+    stamp.classList.remove('judging');
+    stamp.classList.add('rated');
+    stamp.hidden = false;
+  }
+  const line = card.querySelector('.ai-cap');
+  if (caption) {
+    line.textContent = caption;
+    line.hidden = false;
+  }
+}
+
+function makePolaroid({ dataUrl, scare, name, rating, caption }, { unsaved = false, judging = false } = {}) {
   const card = document.createElement('figure');
   card.className = 'polaroid';
   card.style.setProperty('--tilt', tilt());
@@ -280,7 +313,21 @@ function makePolaroid({ dataUrl, scare, name }, { unsaved = false } = {}) {
   const sub = document.createElement('span');
   sub.className = 'sub';
   sub.textContent = scare;
-  card.append(img, cap, sub);
+  const frame = document.createElement('div');
+  frame.className = 'photo';
+  const stamp = document.createElement('span');
+  stamp.className = 'stamp';
+  stamp.hidden = !judging;
+  if (judging) {
+    stamp.classList.add('judging');
+    stamp.textContent = 'Judging your scream...';
+  }
+  frame.append(img, stamp);
+  const aiCap = document.createElement('span');
+  aiCap.className = 'ai-cap';
+  aiCap.hidden = true;
+  card.append(frame, cap, aiCap, sub);
+  fillVerdict(card, { rating, caption });
   if (unsaved) {
     const r = document.createElement('span');
     r.className = 'ribbon';
@@ -291,14 +338,27 @@ function makePolaroid({ dataUrl, scare, name }, { unsaved = false } = {}) {
 }
 
 // Shows the photos big over the end screen, then shrinks them into the Reaction wall button.
-async function revealPolaroids(shots) {
+async function revealPolaroids(shots, verdict) {
   const overlay = document.createElement('div');
   overlay.className = 'reveal';
-  const cards = shots.map((s) => makePolaroid({ ...s, name: playerName }));
+  const cards = shots.map((s) => makePolaroid({ ...s, name: playerName }, { judging: !PREVIEW }));
   overlay.append(...cards);
   document.body.appendChild(overlay);
   audio.shutter?.();
-  await sleepMs(3000);
+
+  // Hold the photos until the AI has rated them (up to about 9 seconds), then show the verdict.
+  const result = await Promise.race([
+    Promise.all([verdict, sleepMs(2200)]).then(([r]) => r),
+    sleepMs(9000).then(() => null),
+  ]);
+  if (result) {
+    cards.forEach((card, i) => fillVerdict(card, shots[i]));
+    audio.creak?.();
+    await sleepMs(2600);
+  } else {
+    cards.forEach((card) => (card.querySelector('.stamp').hidden = true));
+    await sleepMs(800);
+  }
 
   const target = $('wall-open').getBoundingClientRect();
   const tx = target.left + target.width / 2;
@@ -350,6 +410,9 @@ async function updateWallCount() {
 
 $('keep-yes').addEventListener('click', async () => {
   audio.click();
+  $('keep-buttons').classList.add('hidden');
+  // Wait briefly for the AI verdict so the rating and caption are saved with the photos.
+  await Promise.race([pendingVerdict, sleepMs(6000)]);
   const photos = pendingShots.map((s) => ({ ...s, name: playerName }));
   pendingShots = [];
   $('keep-buttons').classList.add('hidden');

@@ -324,6 +324,85 @@ button {
   transform: rotate(var(--tilt));
 }
 
+.polaroid .photo {
+  position: relative;
+}
+
+.polaroid .stamp {
+  position: absolute;
+  right: 6%;
+  bottom: 7%;
+  padding: 4px 10px;
+  border: 3px solid #d8261c;
+  border-radius: 4px;
+  color: #ff3b30;
+  background: rgba(20, 0, 0, 0.35);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: clamp(11px, 1.6vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: rotate(-9deg);
+}
+
+.polaroid .stamp.judging {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #f1f1f1;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: clamp(10px, 1.2vw, 14px);
+  animation: judging 1s ease-in-out infinite;
+}
+
+.polaroid .stamp.rated {
+  animation: stamp 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes judging {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-9deg) scale(2.4);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-9deg) scale(1);
+  }
+}
+
+.polaroid .ai-cap {
+  font-family: 'Caveat', 'Bradley Hand', 'Comic Sans MS', cursive;
+  font-size: 18px;
+  line-height: 1.1;
+  color: #8a1a12;
+  text-align: center;
+}
+
+.wall-grid .polaroid .stamp {
+  font-size: 11px;
+  border-width: 2px;
+  padding: 2px 6px;
+}
+
+.taunt {
+  min-height: 1.2em;
+  margin: -6px 0 18px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: #ff6b6b;
+  text-align: center;
+  max-width: 60ch;
+}
+
+.taunt:empty {
+  display: none;
+}
+
 .polaroid img {
   display: block;
   width: 100%;
@@ -397,6 +476,10 @@ button {
 
 .reveal .polaroid .cap {
   font-size: clamp(28px, 3vw, 40px);
+}
+
+.reveal .polaroid .ai-cap {
+  font-size: clamp(20px, 2vw, 26px);
 }
 
 @keyframes develop {

@@ -17,7 +17,7 @@
         <p class="tag">It only moves when your eyes are closed.</p>
         <ul class="warn">
           <li id="warn-camera">Uses your webcam. All tracking runs in your browser and nothing is uploaded.</li>
-          <li>Takes two reaction photos during the scares. At the end you choose to keep them on this laptop's photo wall or delete them.</li>
+          <li>Takes two reaction photos during the scares. An AI on DigitalOcean rates your scream from them (they are not stored there). At the end you choose to keep them on this laptop's photo wall or delete them.</li>
           <li>Contains a loud jump scare and sudden motion. No strobe lights.</li>
           <li>Wear headphones for the full effect.</li>
         </ul>
@@ -58,6 +58,7 @@
       <div class="end-inner">
         <h2>YOU BLINKED.</h2>
         <p id="end-stats"></p>
+        <p id="taunt" class="taunt" aria-live="polite"></p>
         <div class="keep hidden" id="keep">
           <p id="keep-text">Keep your reaction photos on the wall?</p>
           <div class="keep-buttons" id="keep-buttons">
