@@ -322,7 +322,11 @@ export class Game {
     st.scareStart = now;
     st.survived = (now - st.startedAt) / 1000;
     this.audio.stopAll();
-    this.audio.scream({ duration: CONFIG.phases.scareDurationMs / 1000 + 0.1 });
+    const seconds = CONFIG.phases.scareDurationMs / 1000 + 0.1;
+    // The recorded scream, or the synthesized one if the file could not be loaded.
+    if (!this.audio.playSample('scream', { volume: CONFIG.audio.scareVolume, maxSeconds: seconds })) {
+      this.audio.scream({ duration: seconds });
+    }
   }
 
   _finish() {

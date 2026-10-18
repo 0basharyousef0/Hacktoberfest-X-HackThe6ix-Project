@@ -7,6 +7,7 @@ import { Vision } from './vision.js';
 import { SoundEngine } from './audio.js';
 import { runCaptcha } from './captcha.js';
 import { Game } from './game.js';
+import { ASSETS } from './assets.js';
 
 const $ = (id) => document.getElementById(id);
 const video = $('cam');
@@ -130,6 +131,7 @@ $('start').addEventListener('click', async () => {
   btn.disabled = true;
   $('intro-error').textContent = '';
   audio.unlock();
+  audio.loadSample('scream', ASSETS.screamSrc);
 
   try {
     // After Quit the simulated camera is kept; a real camera is switched off and asked for again.
@@ -147,6 +149,7 @@ $('start').addEventListener('click', async () => {
 // Backup for a camera that will not cooperate during judging.
 $('demo').addEventListener('click', async () => {
   audio.unlock();
+  audio.loadSample('scream', ASSETS.screamSrc);
   source = await getSource(true);
   run();
 });

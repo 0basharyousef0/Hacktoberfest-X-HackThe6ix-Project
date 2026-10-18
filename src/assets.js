@@ -15,6 +15,8 @@ const PATHS = {
   ],
   // The wrong answers in the sponsor round.
   drake: [1, 2, 3, 4, 5].map((n) => `assets/drake/drake-${n}.jpg`),
+  // The recorded scream for the final jump scare (first 4 seconds of the original file).
+  scream: 'assets/scream.mp3',
 };
 
 const urls = { ...PATHS, ...(window.DONT_BLINK_ASSETS || {}) };
@@ -62,5 +64,6 @@ export const ASSETS = {
   // Plain paths for <img> tiles; a missing file shows a text label instead.
   sponsorTiles: urls.sponsors,
   drakeTiles: urls.drake,
+  screamSrc: urls.scream,
   ready: Promise.all([...entries.slender, entries.scareFace, entries.freddy, entries.peekFace].map((e) => e.ready)),
 };

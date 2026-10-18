@@ -289,6 +289,48 @@ export class SoundEngine {
     });
   }
 
+  // Loads a recorded sound into memory so it plays with no delay.
+  // Accepts a normal path or a base64 data: URL (the preview build embeds files that way).
+  async loadSample(name, src) {
+    if (!this.ctx || !src) return;
+    this.samples = this.samples || {};
+    if (this.samples[name]) return;
+    try {
+      let bytes;
+      if (src.startsWith('data:')) {
+        const bin = atob(src.slice(src.indexOf(',') + 1));
+        bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        bytes = bytes.buffer;
+      } else {
+        bytes = await (await fetch(src)).arrayBuffer();
+      }
+      this.samples[name] = await this.ctx.decodeAudioData(bytes);
+      console.info(`[audio] loaded ${name} (${this.samples[name].duration.toFixed(1)}s)`);
+    } catch (err) {
+      console.warn('[audio] could not load', name, err);
+    }
+  }
+
+  // Plays a loaded recording. Returns false if it is not loaded, so the caller can fall back.
+  playSample(name, { volume = 1, maxSeconds } = {}) {
+    const buffer = this.samples?.[name];
+    if (!this.ctx || !buffer) return false;
+    const t = this.ctx.currentTime;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+    const g = this.ctx.createGain();
+    g.gain.value = volume;
+    src.connect(g).connect(this.master);
+    src.start(t);
+    if (maxSeconds && maxSeconds < buffer.duration) {
+      g.gain.setValueAtTime(volume, t + maxSeconds - 0.3);
+      g.gain.linearRampToValueAtTime(0.0001, t + maxSeconds);
+      src.stop(t + maxSeconds + 0.05);
+    }
+    return true;
+  }
+
   // Countdown beep.
   beep() {
     if (!this.ctx) return;
